@@ -15,11 +15,11 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v4
 
-    # 2. Node.js installieren (wird für den Validator benötigt)
+    # 2. Node.js installieren
     - name: Set up Node.js
       uses: actions/setup-node@v4
       with:
-        node-node-version: '20'
+        node-version: '20'
 
     # 3. Den offiziellen Ajv-CLI-Validator global installieren
     - name: Install JSON Schema Validator (Ajv)
@@ -29,6 +29,12 @@ jobs:
     - name: Validate Schema Definition
       run: ajv compile -s schema.json -c ajv-formats
 
-    # 5. Die Beispieldatei gegen das Schema validieren
-    - name: Validate Examples against Schema
-      run: ajv validate -s schema.json -d "examples/*.json" -c ajv-formats
+    # 5. Positivtest: Valide Beispiele MÜSSEN erfolgreich sein
+    - name: Validate Positive Examples (Must Pass)
+      run: ajv validate -s schema.json -d "examples/valid-*.json" -c ajv-formats
+
+    # 6. Negativtest: Invalide Beispiele MÜSSEN fehlschlagen
+    # Das '!' vor dem Befehl invertiert das Ergebnis: Schlägt die Validierung fehl, wird der Step GRÜN.
+    - name: Validate Negative Examples (Must Fail)
+      run: ! ajv validate -s schema.json -d "examples/invalid-*.json" -c ajv-formats
+
