@@ -1,0 +1,34 @@
+name: Validate JSON Schema and Examples
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+
+    steps:
+    # 1. Repository-Code auschecken
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    # 2. Node.js installieren (wird für den Validator benötigt)
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-node-version: '20'
+
+    # 3. Den offiziellen Ajv-CLI-Validator global installieren
+    - name: Install JSON Schema Validator (Ajv)
+      run: npm install -g ajv-cli ajv-formats
+
+    # 4. Das Schema selbst auf syntaktische Korrektheit prüfen
+    - name: Validate Schema Definition
+      run: ajv compile -s schema.json -c ajv-formats
+
+    # 5. Die Beispieldatei gegen das Schema validieren
+    - name: Validate Examples against Schema
+      run: ajv validate -s schema.json -d "examples/*.json" -c ajv-formats
