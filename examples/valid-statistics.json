@@ -1,0 +1,63 @@
+{
+  "version": "2.0.0",
+  "created_at": "2026-10-10T00:00:00Z",
+  "next_update_at": "2026-10-10T00:05:00Z",
+  "period_start": "2026-10-09T23:45:00Z",
+  "period_end": "2026-10-10T00:00:00Z",
+  "sources": {
+    "123": {
+      "title": "Global Internet Exchange Aggregate Traffic",
+      "url": "https://ixp.example.org/statistics",
+      "ixf_ixid": 123,
+      "target_type": "ixp",
+      "aggregate_interval": 300,
+      "consolidation": "AVERAGE",
+      "direction_reference": "ingress_to_fabric",
+      "collector": "IXP Manager MRTG",
+      "fields": [
+        {
+          "name": "timestamp",
+          "type": "string",
+          "unit": "datetime",
+          "description": "Start of the 5-minute measurement window."
+        },
+        {
+          "name": "bits_in",
+          "type": "number",
+          "unit": "bps",
+          "description": "Average inbound bits per second during the window."
+        },
+        {
+          "name": "bits_out",
+          "type": "number",
+          "unit": "bps",
+          "description": "Average outbound bits per second during the window."
+        }
+      ]
+    }
+  },
+  "samples": {
+    "123": [
+      [
+        "2026-10-09T23:45:00Z",
+        450000000000,
+        448500000000
+      ],
+      [
+        "2026-10-09T23:50:00Z",
+        455000000000,
+        453000000000
+      ],
+      [
+        "2026-10-09T23:55:00Z",
+        null,
+        null
+      ],
+      [
+        "2026-10-10T00:00:00Z",
+        462000000000,
+        461000000000
+      ]
+    ]
+  }
+}
