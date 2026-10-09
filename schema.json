@@ -1,0 +1,208 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "title": "IXP Statistics Timeseries Schema",
+  "description": "Timeseries traffic statistics export for an IXP. Keys in 'sources' and 'samples' are paired: every key present in 'samples' MUST have a corresponding entry in 'sources' describing its metadata, and vice versa. Unknown or unavailable sample values are represented as JSON null, never omitted.",
+  "type": "object",
+  "required": [
+    "version",
+    "created_at",
+    "next_update_at",
+    "period_start",
+    "period_end",
+    "sources",
+    "samples"
+  ],
+  "properties": {
+    "version": {
+      "title": "Schema Version",
+      "description": "Semantic version of this schema (e.g. '2.0.0'). Not the version of the data within the IXP.",
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$"
+    },
+    "created_at": {
+      "title": "Export Timestamp",
+      "description": "ISO 8601 datetime (with timezone offset) at which this document was generated.",
+      "type": "string",
+      "format": "date-time"
+    },
+    "next_update_at": {
+      "title": "Next Export Timestamp",
+      "description": "ISO 8601 datetime at which the next export is expected. Allows consumers to schedule polling without guessing.",
+      "type": "string",
+      "format": "date-time"
+    },
+    "period_start": {
+      "title": "Period Start",
+      "description": "ISO 8601 datetime of the earliest sample in this document. Consumers can detect gaps by comparing this against the first sample timestamp.",
+      "type": "string",
+      "format": "date-time"
+    },
+    "period_end": {
+      "title": "Period End",
+      "description": "ISO 8601 datetime of the latest sample in this document. Together with period_start and aggregate_interval this allows consumers to verify completeness.",
+      "type": "string",
+      "format": "date-time"
+    },
+    "sources": {
+      "title": "Statistic Sources",
+      "description": "A map of source descriptors. Each key uniquely identifies one measurement series within this export. For IXP-aggregate data the key is conventionally the ixf_ixid as a string. For sub-IXP granularity (VLAN, switch, member port) the key should be a stable composite identifier such as '{ixf_ixid}:{target_type}:{target_id}'.",
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": {
+        "type": "object",
+        "required": [
+          "title",
+          "url",
+          "ixf_ixid",
+          "target_type",
+          "aggregate_interval",
+          "consolidation",
+          "direction_reference",
+          "fields"
+        ],
+        "properties": {
+          "title": {
+            "title": "Display Name",
+            "description": "Human-readable label for this series, suitable for chart legends.",
+            "type": "string"
+          },
+          "url": {
+            "title": "Statistics Page URL",
+            "description": "URL of the IXP's own public statistics page for this series.",
+            "type": "string",
+            "format": "uri"
+          },
+          "ixf_ixid": {
+            "title": "IX-F IXP Identifier",
+            "description": "The numeric IX-F IXP ID from the IX-F member export (ixf_ixid field). Ties this data series to the canonical IXP registry entry.",
+            "type": "integer"
+          },
+          "target_type": {
+            "title": "Measurement Target Type",
+            "description": "Granularity level of this series. 'ixp' = whole-IXP aggregate; 'vlan' = per-VLAN aggregate; 'switch' = per-switch aggregate; 'trunk' = inter-switch trunk; 'vlan_interface' = individual member port on a VLAN.",
+            "type": "string",
+            "enum": [
+              "ixp",
+              "vlan",
+              "switch",
+              "trunk",
+              "vlan_interface"
+            ]
+          },
+          "target_id": {
+            "title": "Target Identifier",
+            "description": "Identifies the specific target within its type. For 'ixp' this may be omitted or equal to ixf_ixid. For 'vlan' use the VLAN tag or IXP Manager VLAN ID. For 'switch' and 'trunk' use the IXP Manager switch/trunk ID. For 'vlan_interface' use the IXP Manager VLANInterface ID or member ASN combined with port ID.",
+            "type": [
+              "string",
+              "integer"
+            ]
+          },
+          "aggregate_interval": {
+            "title": "Aggregate Window (seconds)",
+            "description": "Width of each sample window in seconds. Typical RRDtool values: 300 (5 min), 1800 (30 min), 7200 (2 h), 86400 (1 day).",
+            "type": "integer",
+            "minimum": 1
+          },
+          "consolidation": {
+            "title": "RRD Consolidation Function",
+            "description": "The RRDtool consolidation function (CF) used to produce the sample values. AVERAGE: mean over the window (use for capacity planning and trend analysis). MAX: peak within the window (use for headroom and SLA checks). MIN: trough within the window. LAST: final raw gauge reading. Comparing AVERAGE from one IXP with MAX from another will yield misleading results.",
+            "type": "string",
+            "enum": [
+              "AVERAGE",
+              "MAX",
+              "MIN",
+              "LAST"
+            ]
+          },
+          "direction_reference": {
+            "title": "Traffic Direction Reference Point",
+            "description": "The physical reference point for 'in' and 'out' in the sample metrics. 'ingress_to_fabric' means 'in' is traffic arriving at the IXP switching fabric from member ports; 'egress_from_fabric' means 'in' is traffic leaving the fabric toward member ports. IXP Manager's native convention is 'ingress_to_fabric'. This field is essential for correct interpretation of per-member-port data.",
+            "type": "string",
+            "enum": [
+              "ingress_to_fabric",
+              "egress_from_fabric"
+            ]
+          },
+          "collector": {
+            "title": "Measurement Collector",
+            "description": "Description of the infrastructure that collected the raw measurements. Relevant when data originates from a third-party collector, NaaS provider, or aggregation service rather than the IXP's own MRTG/sFlow/NetFlow infrastructure. Free-form string; examples: 'IXP Manager MRTG', 'sFlow via sflowtool', 'NetFlow', 'NaaS collector-AS 64500', 'Mplify LSO'.",
+            "type": "string"
+          },
+          "fields": {
+            "title": "Tuple Field Descriptors",
+            "description": "Ordered list of field descriptors corresponding positionally to the sample tuple. Position 0 is always the sample timestamp. Positions 1..N are the metric values in the order they appear in each sample array. Adding new fields in a future version appends to this list; existing positions never change meaning.",
+            "type": "array",
+            "minItems": 2,
+            "items": {
+              "type": "object",
+              "required": [
+                "name",
+                "type",
+                "unit"
+              ],
+              "properties": {
+                "name": {
+                  "description": "Machine-readable field name. Position 0 must be 'timestamp'. Conventional names for other positions: 'bits_in', 'bits_out', 'packets_in', 'packets_out', 'errors_in', 'errors_out', 'discards_in', 'discards_out'.",
+                  "type": "string"
+                },
+                "type": {
+                  "description": "JSON type of the value in the sample tuple. 'string' for the timestamp, 'number' for metric values.",
+                  "type": "string",
+                  "enum": [
+                    "string",
+                    "number"
+                  ]
+                },
+                "unit": {
+                  "description": "Unit of measurement. 'datetime' for the timestamp field. For metrics: 'bps' (bits per second), 'pps' (packets per second), 'eps' (errors per second), 'dps' (discards per second). Use rate units (bps/pps/eps/dps) for RRDtool-backed data where values are already normalised to per-second averages over the window. Use 'bytes', 'packets', 'errors', 'discards' only when exporting raw counters, not rates.",
+                  "type": "string",
+                  "enum": [
+                    "datetime",
+                    "bps",
+                    "pps",
+                    "eps",
+                    "dps",
+                    "bytes",
+                    "packets",
+                    "errors",
+                    "discards"
+                  ]
+                },
+                "description": {
+                  "description": "Optional human-readable explanation of this field.",
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "samples": {
+      "title": "Sample Data",
+      "description": "A map of sample arrays. Keys must correspond exactly to keys in 'sources'. Each value is an array of tuples. Each tuple is an array whose positional structure is defined by the 'fields' array of the matching source entry. Tuple position 0 is always an ISO 8601 datetime string. Subsequent positions are numeric metric values or null. null represents an RRD UNKNOWN value (poller gap, link down, missed poll). Tuples are ordered chronologically ascending.",
+      "type": "object",
+      "additionalProperties": {
+        "type": "array",
+        "items": {
+          "type": "array",
+          "minItems": 2,
+          "items": [
+            {
+              "description": "Sample timestamp (ISO 8601 with timezone offset). Marks the start of the aggregate window.",
+              "type": "string",
+              "format": "date-time"
+            }
+          ],
+          "additionalItems": {
+            "description": "Metric value at the position defined by the corresponding entry in the source's 'fields' array. null indicates the value was unavailable (RRD UNKNOWN) for this window.",
+            "type": [
+              "number",
+              "null"
+            ]
+          }
+        }
+      }
+    }
+  }
+}
