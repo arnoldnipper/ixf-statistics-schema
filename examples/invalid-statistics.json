@@ -33,11 +33,11 @@
     }
   },
   "samples": {
+  "//_comment4": "ERROR 4: A text string is placed at position 1 in the tuple instead of a number or null."
     "999": [
       [
         "2026-10-10T01:20:00Z",
         "STRING_INSTEAD_OF_NUMBER",
-        "//_comment4": "ERROR 4: A text string is placed at position 1 in the tuple instead of a number or null."
       ]
     ]
   }
