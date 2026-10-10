@@ -4,9 +4,9 @@
   "description": "This file contains intentional schema violations to test the CI/CD pipeline validation.",
   "version": "2.0.0",
   "created_at": "2026-10-10T01:30:00Z",
-  "//_comment": "FEHLER 1: Das Pflichtfeld 'next_update_at' fehlt komplett im Hauptobjekt.",
+  "//_comment": "ERROR 1: The mandatory field 'next_update_at' is completely missing from the root object.",
   "period_start": "not-a-iso-date-string",
-  "//_comment2": "FEHLER 2: 'period_start' oben verwendet kein gültiges ISO-8601 Datumsformat.",
+  "//_comment2": "ERROR 2: 'period_start' above does not use a valid ISO 8601 datetime format.",
   "period_end": "2026-10-10T01:25:00Z",
   "sources": {
     "999": {
@@ -16,7 +16,7 @@
       "target_type": "ixp",
       "aggregate_interval": 300,
       "consolidation": "MINIMUM",
-      "//_comment3": "FEHLER 3: 'MINIMUM' ist ein ungültiger Enum-Wert. Erlaubt ist nur 'MIN', 'MAX', 'AVERAGE' oder 'LAST'.",
+      "//_comment3": "ERROR 3: 'MINIMUM' is an invalid enum value. Only 'MIN', 'MAX', 'AVERAGE', or 'LAST' are authorised.",
       "direction_reference": "ingress_to_fabric",
       "fields": [
         {
@@ -36,8 +36,8 @@
     "999": [
       [
         "2026-10-10T01:20:00Z",
-        "STRING_INSTEAD_OF_NUMBER"
-        "//_comment4": "FEHLER 4: An Position 1 im Tuple steht ein Text-String statt einer Zahl oder null."
+        "STRING_INSTEAD_OF_NUMBER",
+        "//_comment4": "ERROR 4: A text string is placed at position 1 in the tuple instead of a number or null."
       ]
     ]
   }
