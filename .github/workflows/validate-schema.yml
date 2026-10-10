@@ -35,4 +35,11 @@ jobs:
 
     # 6. Negativtest: Invalide Beispiele MÜSSEN fehlschlagen
     - name: Validate Negative Examples (Must Fail)
-      run: ! ajv validate -s schema.json -d "examples/invalid-*.json" -c ajv-formats
+  shell: bash
+  run: |
+    if ajv validate -s schema.json -d "examples/invalid-*.json" -c ajv-formats; then
+      echo "ERROR: invalid example unexpectedly passed validation"
+      exit 1
+    else
+      echo "OK: invalid example failed validation as expected"
+    fi
